@@ -4,7 +4,6 @@ import { Pose, POSE_CONNECTIONS } from '@mediapipe/pose';
 import * as cam from '@mediapipe/camera_utils';
 import { thresholdsBeginner, thresholdsPro } from './PlankThresholds';
 import { useNavigate } from 'react-router-dom';
-import { startSession, updateSession, endSession } from '../api';
 import { debounce } from 'lodash';
 
 
@@ -467,24 +466,6 @@ function PlankExercise() {
     }, [onResults]); // Notice how we use the onResults function within the dependencies list.
 
 
-    useEffect(() => {
-        const initiateSession = debounce(async () => {
-            try {
-                const response = await startSession('plank');
-                console.log('Session started:', response);
-                setSessionStarted(true); // Set session started to true only if API call is successful
-            } catch (error) {
-                console.error('Error starting session:', error);
-            }
-        }, 1000); // debounce duration of 300ms
-
-        initiateSession();
-
-        return () => {
-            initiateSession.cancel(); // cancel any pending debounced calls on component unmount
-        };
-    }, []); // This useEffect runs only once on component mount
-
     // update session every 5 seconds
     useEffect(() => {
         if (!sessionStarted || sessionEnded) return;
@@ -498,8 +479,7 @@ function PlankExercise() {
                     return obj;
                 }, {});
                 console.log('Updating session...', { correct, incorrect, feedback });
-                await updateSession({ correct, incorrect, feedback });
-                console.log('Session updated');
+                
             } catch (error) {
                 console.error('Error updating session:', error);
             }
@@ -521,9 +501,7 @@ function PlankExercise() {
                 return obj;
             }, {});
 
-            await endSession({ correct, incorrect, feedback });
-            console.log('Session ended');
-            setSessionEnded(true); // Set sessionEnded to true after successful endSession call
+          
         } catch (error) {
             console.error('Error ending session:', error);
         }
@@ -535,7 +513,6 @@ function PlankExercise() {
 
     // Function to handle ending the current session and navigating back to the main page
     const handleEndSessionAndNavigate = async () => {
-        await endCurrentSession();
         handleNavigate();
     };
 

@@ -2,7 +2,7 @@
 import Hero from './Hero';
 import Nav from './Nav';
 import Exercises from './Exercises'
-import History from './History';
+//import History from './History';
 import About from './About';
 
 export default function Main() {
@@ -16,7 +16,6 @@ export default function Main() {
         <Nav />
         <Hero />
         <Exercises />
-        <History />
         <About />
         
         

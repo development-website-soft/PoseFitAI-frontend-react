@@ -1,20 +1,16 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import Webcam from "react-webcam";
+import Webcam from 'react-webcam';
 import { Pose } from '@mediapipe/pose';
 import * as cam from '@mediapipe/camera_utils';
 import { thresholdsBeginner, thresholdsPro } from './SquatThresholds';
 import { useNavigate } from 'react-router-dom';
-import { startSession, updateSession, endSession } from '../api';
 import { debounce } from 'lodash';
 
 function SquatExercise() {
   const webcamRef = useRef(null);
   const canvasRef = useRef(null);
   const navigate = useNavigate();
-  const [sessionStarted, setSessionStarted] = useState(false);
-  const [sessionEnded, setSessionEnded] = useState(false);
   const [isBeginnerMode, setIsBeginnerMode] = useState(true);
-  const flipFrameRef = useRef(false);
   const [currentThresholds, setCurrentThresholds] = useState(thresholdsBeginner);
 
   const stateTrackerRef = useRef({
@@ -30,7 +26,7 @@ function SquatExercise() {
     prev_state: null,
     curr_state: null,
     SQUAT_COUNT: 0,
-    IMPROPER_SQUAT: 0
+    IMPROPER_SQUAT: 0,
   });
 
   const dictFeatures = {
@@ -40,15 +36,22 @@ function SquatExercise() {
   };
 
   const colors = {
-    blue: 'rgb(0,127,255)', red: 'rgb(255,50,50)', green: 'rgb(0,255,127)', light_green: 'rgb(100,233,127)',
-    yellow: 'rgb(255,255,0)', magenta: 'rgb(255,0,255)', white: 'rgb(255,255,255)', cyan: 'rgb(0,255,255)', light_blue: 'rgb(102,204,255)'
+    blue: 'rgb(0,127,255)',
+    red: 'rgb(255,50,50)',
+    green: 'rgb(0,255,127)',
+    light_green: 'rgb(100,233,127)',
+    yellow: 'rgb(255,255,0)',
+    magenta: 'rgb(255,0,255)',
+    white: 'rgb(255,255,255)',
+    cyan: 'rgb(0,255,255)',
+    light_blue: 'rgb(102,204,255)',
   };
 
   const FEEDBACK_ID_MAP = {
     0: { text: 'BEND BACKWARDS', position: 215, color: 'rgb(0,153,255)' },
     1: { text: 'BEND FORWARD', position: 215, color: 'rgb(0,153,255)' },
     2: { text: 'KNEE FALLING OVER TOE', position: 170, color: 'rgb(255,80,80)' },
-    3: { text: 'SQUAT TOO DEEP', position: 125, color: 'rgb(255,80,80)' }
+    3: { text: 'SQUAT TOO DEEP', position: 125, color: 'rgb(255,80,80)' },
   };
 
   const getState = (kneeAngle) => {
@@ -60,7 +63,7 @@ function SquatExercise() {
 
   const updateStateSequence = (newState) => {
     let updatedStateSeq = [...stateTrackerRef.current.state_seq];
-    if (newState === 's2' && (!updatedStateSeq.includes('s3') || updatedStateSeq.filter(state => state === 's2').length === 1)) updatedStateSeq.push(newState);
+    if (newState === 's2' && (!updatedStateSeq.includes('s3') || updatedStateSeq.filter((state) => state === 's2').length === 1)) updatedStateSeq.push(newState);
     if (newState === 's3' && !updatedStateSeq.includes('s3') && updatedStateSeq.includes('s2')) updatedStateSeq.push(newState);
     stateTrackerRef.current.state_seq = updatedStateSeq;
   };
@@ -88,7 +91,7 @@ function SquatExercise() {
       hip: getLandmarkPosition(poseLandmarks[featureSet.hip], frameWidth, frameHeight),
       knee: getLandmarkPosition(poseLandmarks[featureSet.knee], frameWidth, frameHeight),
       ankle: getLandmarkPosition(poseLandmarks[featureSet.ankle], frameWidth, frameHeight),
-      foot: getLandmarkPosition(poseLandmarks[featureSet.foot], frameWidth, frameHeight)
+      foot: getLandmarkPosition(poseLandmarks[featureSet.foot], frameWidth, frameHeight),
     };
   };
 
@@ -100,7 +103,7 @@ function SquatExercise() {
   };
 
   const drawText = (ctx, msg, x, y, options = {}) => {
-    const { boxWidth = 8, textColor = 'rgb(0, 255, 0)', backgroundColor = 'rgb(0, 0, 0)', fontSize = '16px', fontFamily = 'Arial', paddingX = 20, paddingY = 10 } = options;
+    const { textColor = 'rgb(0, 255, 0)', backgroundColor = 'rgb(0, 0, 0)', fontSize = '16px', fontFamily = 'Arial', paddingX = 20, paddingY = 10 } = options;
     ctx.font = `${fontSize} ${fontFamily}`;
     const textMetrics = ctx.measureText(msg);
     const textWidth = textMetrics.width;
@@ -112,7 +115,7 @@ function SquatExercise() {
     ctx.fillStyle = backgroundColor;
     ctx.fillRect(rectStartX, rectStartY, rectWidth, rectHeight);
     ctx.fillStyle = textColor;
-    ctx.fillText(msg, x, y + (paddingY / 2));
+    ctx.fillText(msg, x, y + paddingY / 2);
   };
 
   const drawCircle = (ctx, position, radius, color) => {
@@ -131,33 +134,17 @@ function SquatExercise() {
     ctx.stroke();
   };
 
-  const drawDottedLine = (ctx, start, end, color) => {
-    const lineLength = Math.sqrt((end.x - start.x) ** 2 + (end.y - start.y) ** 2);
-    const dotSpacing = 5;
-    const numOfDots = Math.floor(lineLength / dotSpacing);
-    for (let i = 0; i < numOfDots; i++) {
-      const dotX = start.x + ((end.x - start.x) / numOfDots) * i;
-      const dotY = start.y + ((end.y - start.y) / numOfDots) * i;
-      ctx.beginPath();
-      ctx.arc(dotX, dotY, 1, 0, 2 * Math.PI);
-      ctx.fillStyle = color;
-      ctx.fill();
-    }
-  };
-
   const onResults = useCallback((results) => {
     if (!webcamRef.current || !canvasRef.current) return;
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     canvas.width = webcamRef.current.video.videoWidth;
     canvas.height = webcamRef.current.video.videoHeight;
     const frameWidth = canvas.width;
     const frameHeight = canvas.height;
 
-    ctx.drawImage(webcamRef.current.video, 0, 0, canvas.width, canvas.height);
-
-    let displayInactivity = false;
-    let endTime = Date.now();
+    ctx.clearRect(0, 0, frameWidth, frameHeight);
+    ctx.drawImage(webcamRef.current.video, 0, 0, frameWidth, frameHeight);
 
     if (results.poseLandmarks) {
       const noseCoord = getLandmarkFeatures(results.poseLandmarks, 'nose', frameWidth, frameHeight);
@@ -167,32 +154,9 @@ function SquatExercise() {
       const offsetAngle = findAngle(leftFeatures.shoulder, rightFeatures.shoulder, noseCoord);
 
       if (offsetAngle > currentThresholds.OFFSET_THRESH) {
-        endTime = Date.now();
-        stateTrackerRef.current.INACTIVE_TIME_FRONT += endTime - stateTrackerRef.current.start_inactive_time_front;
-        stateTrackerRef.current.start_inactive_time_front = endTime;
-
-        if (stateTrackerRef.current.INACTIVE_TIME_FRONT >= currentThresholds.INACTIVE_THRESH) {
-          stateTrackerRef.current.INACTIVE_TIME_FRONT = 0;
-          stateTrackerRef.current.start_inactive_time_front = Date.now();
-        }
-
-        drawCircle(ctx, noseCoord, 7, colors.white);
-        drawCircle(ctx, leftFeatures.shoulder, 7, colors.yellow);
-        drawCircle(ctx, rightFeatures.shoulder, 7, colors.magenta);
-
-        drawText(ctx, `CORRECT: ${stateTrackerRef.current.SQUAT_COUNT}`, frameWidth * 0.68, 30, { textColor: 'rgb(255, 255, 230)', backgroundColor: 'rgb(18, 185, 0)', fontSize: '14px' });
-        drawText(ctx, `INCORRECT: ${stateTrackerRef.current.IMPROPER_SQUAT}`, frameWidth * 0.68, 80, { textColor: 'rgb(255, 255, 230)', backgroundColor: 'rgb(221, 0, 0)', fontSize: '14px' });
         drawText(ctx, 'CAMERA NOT ALIGNED PROPERLY!!!', 30, frameHeight - 60, { textColor: 'rgb(255, 255, 230)', backgroundColor: 'rgb(255, 153, 0)', fontSize: '14px' });
         drawText(ctx, `OFFSET ANGLE: ${offsetAngle.toFixed(2)}`, 30, frameHeight - 30, { textColor: 'rgb(255, 255, 230)', backgroundColor: 'rgb(255, 153, 0)', fontSize: '14px' });
-
-        stateTrackerRef.current.start_inactive_time = Date.now();
-        stateTrackerRef.current.INACTIVE_TIME = 0;
-        stateTrackerRef.current.prev_state = null;
-        stateTrackerRef.current.curr_state = null;
       } else {
-        stateTrackerRef.current.INACTIVE_TIME_FRONT = 0;
-        stateTrackerRef.current.start_inactive_time_front = Date.now();
-
         const selectedSideFeatures = Math.abs(leftFeatures.foot.y - leftFeatures.shoulder.y) > Math.abs(rightFeatures.foot.y - rightFeatures.shoulder.y) ? leftFeatures : rightFeatures;
 
         const hip_vertical_angle = findAngle(selectedSideFeatures.shoulder, { x: selectedSideFeatures.hip.x, y: 0 }, selectedSideFeatures.hip);
@@ -227,8 +191,8 @@ function SquatExercise() {
         } else {
           const stateTracker = stateTrackerRef.current;
           if (hip_vertical_angle > currentThresholds.HIP_THRESH[1]) stateTracker.DISPLAY_TEXT[0] = true;
-          else if (hip_vertical_angle < currentThresholds.HIP_THRESH[0] && stateTracker.state_seq.filter(e => e === 's2').length === 1) stateTracker.DISPLAY_TEXT[1] = true;
-          if (currentThresholds.KNEE_THRESH[0] < knee_vertical_angle && knee_vertical_angle < currentThresholds.KNEE_THRESH[1] && stateTracker.state_seq.filter(e => e === 's2').length === 1) stateTracker.LOWER_HIPS = true;
+          else if (hip_vertical_angle < currentThresholds.HIP_THRESH[0] && stateTracker.state_seq.filter((e) => e === 's2').length === 1) stateTracker.DISPLAY_TEXT[1] = true;
+          if (currentThresholds.KNEE_THRESH[0] < knee_vertical_angle && knee_vertical_angle < currentThresholds.KNEE_THRESH[1] && stateTracker.state_seq.filter((e) => e === 's2').length === 1) stateTracker.LOWER_HIPS = true;
           else if (knee_vertical_angle > currentThresholds.KNEE_THRESH[2]) stateTracker.DISPLAY_TEXT[3] = true;
           if (ankle_vertical_angle > currentThresholds.ANKLE_THRESH) stateTracker.DISPLAY_TEXT[2] = true;
         }
@@ -250,24 +214,15 @@ function SquatExercise() {
         stateTrackerRef.current.prev_state = curr_state;
       }
     }
-  }, [webcamRef, canvasRef]);
+  }, [currentThresholds]);
 
   const handleNavigate = () => navigate('/main');
 
-  useEffect(() => {
-    const initiateSession = debounce(async () => {
-      try {
-        const response = await startSession('squat');
-        console.log('Session started:', response);
-        setSessionStarted(true);
-      } catch (error) {
-        console.error('Error starting session:', error);
-      }
-    }, 1000);
-
-    initiateSession();
-    return () => initiateSession.cancel();
-  }, []);
+  const handleModeChange = (event) => {
+    const isBeginner = event.target.value === 'beginner';
+    setIsBeginnerMode(isBeginner);
+    setCurrentThresholds(isBeginner ? thresholdsBeginner : thresholdsPro);
+  };
 
   useEffect(() => {
     const pose = new Pose({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}` });
@@ -277,7 +232,8 @@ function SquatExercise() {
     if (webcamRef.current && webcamRef.current.video) {
       camera = new cam.Camera(webcamRef.current.video, {
         onFrame: async () => await pose.send({ image: webcamRef.current.video }),
-        width: 640, height: 480
+        width: 640,
+        height: 480,
       });
       camera.start();
     }
@@ -286,58 +242,13 @@ function SquatExercise() {
     return () => {
       if (camera) camera.stop();
       pose.close();
-      endCurrentSession();
     };
   }, [onResults]);
-
-  useEffect(() => {
-    if (!sessionStarted || sessionEnded) return;
-    const intervalId = setInterval(async () => {
-      try {
-        const correct = stateTrackerRef.current.SQUAT_COUNT;
-        const incorrect = stateTrackerRef.current.IMPROPER_SQUAT;
-        const feedback = stateTrackerRef.current.COUNT_FRAMES.reduce((obj, count, index) => ({ ...obj, [index]: count }), {});
-        console.log('Updating session...', { correct, incorrect, feedback });
-        await updateSession({ correct, incorrect, feedback });
-        console.log('Session updated');
-      } catch (error) {
-        console.error('Error updating session:', error);
-      }
-    }, 5000);
-
-    return () => clearInterval(intervalId);
-  }, [sessionStarted, sessionEnded]);
-
-  const endCurrentSession = async () => {
-    if (!sessionStarted || sessionEnded) return;
-    try {
-      const correct = stateTrackerRef.current.SQUAT_COUNT;
-      const incorrect = stateTrackerRef.current.IMPROPER_SQUAT;
-      const feedback = stateTrackerRef.current.COUNT_FRAMES.reduce((obj, count, index) => ({ ...obj, [index]: count }), {});
-      await endSession({ correct, incorrect, feedback });
-      console.log('Session ended');
-      setSessionEnded(true);
-    } catch (error) {
-      console.error('Error ending session:', error);
-    }
-  };
-
-  const handleEndSessionAndNavigate = async () => {
-    await endCurrentSession();
-    handleNavigate();
-  };
-
-  const handleModeChange = (event) => {
-    const isBeginner = event.target.value === 'beginner';
-    setIsBeginnerMode(isBeginner);
-    setCurrentThresholds(isBeginner ? thresholdsBeginner : thresholdsPro);
-    console.log('Current Thresholds:', isBeginner ? thresholdsBeginner : thresholdsPro);
-  };
 
   return (
     <div className="bg-gray-100 w-full h-screen flex justify-center items-center overflow-hidden relative">
       <div className="absolute top-0 left-0 m-4 flex items-center">
-        <button onClick={handleEndSessionAndNavigate} className="bg-blue-500 p-2 rounded-md shadow hover:bg-orange-600 transition duration-300 ease-in-out flex items-center justify-center z-10" aria-label="Go back">
+        <button onClick={handleNavigate} className="bg-blue-500 p-2 rounded-md shadow hover:bg-orange-600 transition duration-300 ease-in-out flex items-center justify-center z-10" aria-label="Go back">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="h-6 w-6 text-white">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>

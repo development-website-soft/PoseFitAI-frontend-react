@@ -3,8 +3,8 @@ export default function About() {
     return (
         <>
             <div className="h-auto  p-10 ">
-                <h1 className="text-2xl sm:text-5xl font-bold text-white">ABOUT POSEFIT AI</h1>
-                <p className=" text-xl md:text-3xl pt-10 text-white text-wrap md:leading-loose">
+                <h1 className="text-2xl sm:text-4xl">ABOUT POSEFIT AI</h1>
+                <p className=" text-xl md:text-2xl pt-10  text-wrap md:leading-loose">
                     "POSEFIT AI" is a web app that utilizes your camera to instantly
                      analyze exercise form. With real-time feedback, it guides users 
                      through proper posture during workouts, reducing injury risks and 

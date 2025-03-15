@@ -2,7 +2,7 @@ import axiosInstance from './axiosConfig';
 
 export const startSession = async (exerciseName) => {
   try {
-    const response = await axiosInstance.post('/session/start', { exercise_name: exerciseName });
+    const response = await post('/session/start', { exercise_name: exerciseName });
     return response.data;
   } catch (error) {
     if (error.response) {
