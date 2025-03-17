@@ -508,7 +508,7 @@ function PlankExercise() {
     };
 
     const handleNavigate = () => {
-        navigate('/main');
+        navigate('/');
     };
 
     // Function to handle ending the current session and navigating back to the main page

@@ -29,16 +29,16 @@ export default function App() {
     const navigate = useNavigate();
 
     const planchange = () => {
-      navigate('/PlankExercise');
+      navigate('/PlankDetails');
     }
     const pushup = () => {
-        navigate('/PushUpExercise');
+        navigate('/PushUpDetails');
       }
     const squatchange = () => {
-        navigate('/SquatExercise');
+        navigate('/SquatDetails');
       }
       const tonedchange = () => {
-        navigate('/TonedArmExercise');
+        navigate('/TonedArmDetails');
       }
 
     return (

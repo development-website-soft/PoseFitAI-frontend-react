@@ -216,7 +216,14 @@ function SquatExercise() {
     }
   }, [currentThresholds]);
 
-  const handleNavigate = () => navigate('/main');
+  const handleNavigate = () => {
+    navigate('/');
+};
+
+// Function to handle ending the current session and navigating back to the main page
+const handleEndSessionAndNavigate = async () => {
+    handleNavigate();
+};
 
   const handleModeChange = (event) => {
     const isBeginner = event.target.value === 'beginner';
@@ -248,7 +255,7 @@ function SquatExercise() {
   return (
     <div className="bg-gray-100 w-full h-screen flex justify-center items-center overflow-hidden relative">
       <div className="absolute top-0 left-0 m-4 flex items-center">
-        <button onClick={handleNavigate} className="bg-blue-500 p-2 rounded-md shadow hover:bg-orange-600 transition duration-300 ease-in-out flex items-center justify-center z-10" aria-label="Go back">
+        <button onClick={handleEndSessionAndNavigate} className="bg-blue-500 p-2 rounded-md shadow hover:bg-orange-600 transition duration-300 ease-in-out flex items-center justify-center z-10" aria-label="Go back">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} className="h-6 w-6 text-white">
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>

@@ -5,22 +5,11 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from 'react-toastify';
 
-const list = ["PlankExercise", "SquatExercise", "About", "Profile"];
+const list = ["PlankExercise", "SquatExercise", "About"];
 
 export default function Nav() {
   const [isopen, setisopen] = useState(false);
   const navigate = useNavigate();
-
-  const handleLogout = () => {
-    // Clear local storage or any saved state (if needed)
-    toast.success("Logged out successfully", {
-      position: "top-center",
-      autoClose: 1000,
-      hideProgressBar: true,
-      closeOnClick: true,
-    });
-    navigate('/');  // Redirect to homepage or login page after logout
-  };
 
   const toggle = () => {
     setisopen(!isopen);
@@ -57,12 +46,7 @@ export default function Nav() {
                     </li>
                   ))}
                   <li>
-                    <button
-                      onClick={handleLogout}
-                      className="text-white hover:text-gray-300 transition duration-300"
-                    >
-                      Logout
-                    </button>
+
                   </li>
                 </ul>
               </nav>
